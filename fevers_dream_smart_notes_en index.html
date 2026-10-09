@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Notes</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #ffffff;
+      font-family: 'Quicksand', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    /* Main notes panel */
+    .smart-notes-wrapper {
+      width: 100%;
+      max-width: 1400px;
+      height: min(78vh, 820px);
+      min-height: 620px;
+      background: #ffffff;
+      border: 3px solid #76C0EC;
+      border-radius: 20px;
+      display: flex;
+      overflow: hidden;
+      box-shadow: 0 8px 28px rgba(66, 91, 154, 0.12);
+    }
+
+    /* ---- LEFT: NOTES LIST ---- */
+    .notes-sidebar {
+      width: 340px;
+      flex: 0 0 340px;
+      background: #ffffff;
+      border-right: 2px solid #FFF6DC;
+      display: flex;
+      flex-direction: column;
+      padding: 15px;
+      gap: 12px;
+    }
+
+    .sidebar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .sidebar-header h2 {
+      font-family: 'Fredoka', sans-serif;
+      color: #425B9A;
+      font-size: 25px;
+    }
+    .btn-add-note {
+      background: #76C0EC;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 6px 12px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Quicksand', sans-serif;
+      transition: 0.2s;
+    }
+    .btn-add-note:hover {
+      background: #425B9A;
+    }
+
+    .search-box {
+      width: 100%;
+      border: 1px solid #76C0EC;
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 13px;
+      outline: none;
+      font-family: 'Quicksand', sans-serif;
+    }
+
+    .notes-list {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .note-item {
+      background: white;
+      border: 1px solid #FFF6DC;
+      border-radius: 10px;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .note-item:hover {
+      border-color: #FF95A5;
+      box-shadow: 0 2px 8px rgba(66, 91, 154, 0.10);
+    }
+    .note-item.active {
+      border-color: #76C0EC;
+      background: #FFF6DC;
+    }
+
+    .note-item-title {
+      font-weight: 700;
+      font-size: 14px;
+      color: #425B9A;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding-right: 20px;
+    }
+    .note-item-preview {
+      font-size: 12px;
+      color: #425B9A;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .note-item-tag {
+      display: inline-block;
+      margin-top: 6px;
+      background: #FF95A5;
+      color: #ffffff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .pin-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 12px;
+      opacity: 0.4;
+    }
+    .pin-btn.pinned {
+      opacity: 1;
+    }
+
+    /* ---- RIGHT: NOTE EDITOR ---- */
+    .note-editor {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      background: white;
+    }
+
+    .editor-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      gap: 10px;
+    }
+    .input-title {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-family: 'Fredoka', sans-serif;
+      font-size: 25px;
+      color: #425B9A;
+    }
+    .input-tag {
+      width: 110px;
+      border: 1px solid #76C0EC;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 12px;
+      outline: none;
+      font-weight: 600;
+    }
+    .btn-delete-note {
+      background: #FFF6DC;
+      color: #425B9A;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    /* Rich-text formatting toolbar */
+    .editor-toolbar {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      background: #FFF6DC;
+      padding: 6px 10px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+    .editor-toolbar button {
+      background: white;
+      border: 1px solid #76C0EC;
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 13px;
+      color: #425B9A;
+    }
+    .editor-toolbar button:hover {
+      background: #FF95A5;
+    }
+    .editor-toolbar input[type="color"] {
+      border: none;
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      background: transparent;
+    }
+
+    /* Editable rich-text content area */
+    .editor-body {
+      flex: 1;
+      border: 1px solid #76C0EC;
+      border-radius: 8px;
+      padding: 12px;
+      outline: none;
+      overflow-y: auto;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #425B9A;
+    }
+    .editor-body[placeholder]:empty:before {
+      content: attr(placeholder);
+      color: #8A9BC2;
+    }
+
+    .btn-add-note, .btn-delete-note, .editor-toolbar button {
+      transition: background-color 0.2s, border-color 0.2s;
+    }
+    .btn-add-note { font-size: 14px; padding: 9px 13px; }
+    .search-box { font-size: 14px; padding: 11px 12px; }
+    .note-item { padding: 12px 14px; }
+    .note-item-title { font-size: 15px; }
+    .note-item-preview { font-size: 13px; }
+    .input-title { font-size: 26px; }
+    .input-tag { width: 130px; font-size: 13px; padding: 7px 9px; }
+    .btn-delete-note { font-size: 13px; padding: 8px 11px; }
+    .editor-toolbar { padding: 8px 10px; gap: 8px; }
+    .editor-toolbar button { padding: 6px 10px; font-size: 14px; }
+    .editor-body { font-size: 16px; padding: 16px; }
+    @media (max-width: 760px) {
+      body { padding: 0; align-items: stretch; }
+      .smart-notes-wrapper {
+        height: auto;
+        min-height: 720px;
+        flex-direction: column;
+        border-radius: 14px;
+      }
+      .notes-sidebar {
+        width: 100%;
+        flex: 0 0 auto;
+        min-height: 250px;
+        max-height: 320px;
+        border-right: none;
+        border-bottom: 2px solid #FFF6DC;
+      }
+      .note-editor { min-height: 440px; padding: 16px; }
+      .editor-header { flex-wrap: wrap; }
+      .input-title { min-width: 100%; }
+      .input-tag { flex: 1; }
+      .editor-toolbar { flex-wrap: wrap; }
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="smart-notes-wrapper">
+    <!-- Left column: notes list -->
+    <div class="notes-sidebar">
+      <div class="sidebar-header">
+        <h2>📌 Notes</h2>
+        <button class="btn-add-note" onclick="createNewNote()">+ New note</button>
+      </div>
+      <input type="text" class="search-box" id="search-box" placeholder="🔍 Search notes or tags..." oninput="renderNotesList()">
+      
+      <div class="notes-list" id="notes-list">
+        <!-- Notes appear here automatically -->
+      </div>
+    </div>
+
+    <!-- Right column: note editor -->
+    <div class="note-editor">
+      <div class="editor-header">
+        <input type="text" class="input-title" id="note-title" placeholder="Note title..." oninput="updateCurrentNote()">
+        <input type="text" class="input-tag" id="note-tag" placeholder="# Add a tag" oninput="updateCurrentNote()">
+        <button class="btn-delete-note" onclick="deleteCurrentNote()">🗑 Delete</button>
+      </div>
+
+      <!-- Editing toolbar -->
+      <div class="editor-toolbar">
+        <button onclick="execCmd('bold')"><b>B</b></button>
+        <button onclick="execCmd('italic')"><i>I</i></button>
+        <button onclick="execCmd('underline')"><u>U</u></button>
+        <button onclick="execCmd('insertUnorderedList')">• Bullets</button>
+        <button onclick="execCmd('insertOrderedList')">1. Numbering</button>
+        <input type="color" onchange="execCmd('foreColor', this.value)" title="Text color">
+      </div>
+
+      <!-- Note content area -->
+      <div class="editor-body" id="note-body" contenteditable="true" placeholder="Start writing your notes here..." oninput="updateCurrentNote()"></div>
+    </div>
+  </div>
+
+  <script>
+    let notes = JSON.parse(localStorage.getItem('smart_notes_data')) || [
+      {
+        id: Date.now(),
+        title: 'Pomodoro Study Tip 🍅',
+        content: 'Study for 25 minutes, then take a 5-minute break. After 4 rounds, take a longer 15–30 minute break.',
+        tag: 'Study tips',
+        pinned: true
+      }
+    ];
+
+    let activeNoteId = notes.length > 0 ? notes[0].id : null;
+
+    function saveToStorage() {
+      localStorage.setItem('smart_notes_data', JSON.stringify(notes));
+    }
+
+    function renderNotesList() {
+      const listContainer = document.getElementById('notes-list');
+      const searchQuery = document.getElementById('search-box').value.toLowerCase();
+      listContainer.innerHTML = '';
+
+      // Filter and sort (pinned notes first)
+      const filteredNotes = notes
+        .filter(n => n.title.toLowerCase().includes(searchQuery) || (n.tag && n.tag.toLowerCase().includes(searchQuery)))
+        .sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
+
+      filteredNotes.forEach(note => {
+        const item = document.createElement('div');
+        item.className = `note-item ${note.id === activeNoteId ? 'active' : ''}`;
+        item.onclick = () => selectNote(note.id);
+
+        // Shorten the preview text
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = note.content || '';
+        const plainText = tempDiv.textContent || tempDiv.innerText || '';
+
+        item.innerHTML = `
+          <button class="pin-btn ${note.pinned ? 'pinned' : ''}" onclick="togglePin(event, ${note.id})">📌</button>
+          <div class="note-item-title">${note.title || 'Untitled note'}</div>
+          <div class="note-item-preview">${plainText || 'No preview available...'}</div>
+          ${note.tag ? `<span class="note-item-tag">#${note.tag}</span>` : ''}
+        `;
+        listContainer.appendChild(item);
+      });
+    }
+
+    function selectNote(id) {
+      activeNoteId = id;
+      const note = notes.find(n => n.id === id);
+      if (note) {
+        document.getElementById('note-title').value = note.title;
+        document.getElementById('note-tag').value = note.tag || '';
+        document.getElementById('note-body').innerHTML = note.content || '';
+      }
+      renderNotesList();
+    }
+
+    function createNewNote() {
+      const newNote = {
+        id: Date.now(),
+        title: 'New note',
+        content: '',
+        tag: '',
+        pinned: false
+      };
+      notes.unshift(newNote);
+      activeNoteId = newNote.id;
+      saveToStorage();
+      selectNote(newNote.id);
+    }
+
+    function updateCurrentNote() {
+      if (!activeNoteId) return;
+      const note = notes.find(n => n.id === activeNoteId);
+      if (note) {
+        note.title = document.getElementById('note-title').value;
+        note.tag = document.getElementById('note-tag').value;
+        note.content = document.getElementById('note-body').innerHTML;
+        saveToStorage();
+        renderNotesList();
+      }
+    }
+
+    function deleteCurrentNote() {
+      if (!activeNoteId) return;
+      notes = notes.filter(n => n.id !== activeNoteId);
+      activeNoteId = notes.length > 0 ? notes[0].id : null;
+      saveToStorage();
+      if (activeNoteId) {
+        selectNote(activeNoteId);
+      } else {
+        document.getElementById('note-title').value = '';
+        document.getElementById('note-tag').value = '';
+        document.getElementById('note-body').innerHTML = '';
+        renderNotesList();
+      }
+    }
+
+    function togglePin(event, id) {
+      event.stopPropagation();
+      const note = notes.find(n => n.id === id);
+      if (note) {
+        note.pinned = !note.pinned;
+        saveToStorage();
+        renderNotesList();
+      }
+    }
+
+    function execCmd(command, value = null) {
+      document.execCommand(command, false, value);
+      updateCurrentNote();
+    }
+
+    // Initialize
+    if (activeNoteId) selectNote(activeNoteId);
+  </script>
+</body>
+</html>
